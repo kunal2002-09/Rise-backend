@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "dist",
+    "esModuleInterop": true,
+    // "noEmit": true,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  }, 
+    "include": [
+    "src/**/*"
+  ],
+  "exclude": ["node_modules"]
+}
+// {
+//   "compilerOptions": {
+//     "target": "es6",
+//     "module": "commonjs",
+//     "sourceMap": true,
+
+//     "strict": true,
+//     "esModuleInterop": true,
+//     "skipLibCheck": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "noEmit": true, // Prevents emitting .js files
+//   },
+//   "include": ["src/**/*"],
+//   "exclude": ["node_modules"]
+// }
