@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import {sequelize} from './db/database';
 import bcrypt from 'bcryptjs';
+import Restaurant from './restaurant.model';  // Import the Restaurant model
 
 // Define a UserAttributes interface for defining the shape of the User model.
 interface UserAttributes {
@@ -52,6 +53,8 @@ User.init(
     modelName: 'User',  // This defines the name of the model in Sequelize
   }
 );
+// Define associations here
+User.hasMany(Restaurant, { foreignKey: 'userId', as: 'restaurants' }); // Association defined here
 
 // Hash password before saving the user
 User.beforeCreate(async (user: User) => {

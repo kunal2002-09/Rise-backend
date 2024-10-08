@@ -14,18 +14,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = exports.signup = void 0;
 const user_model_1 = __importDefault(require("../models/user.model"));
+const restaurant_model_1 = __importDefault(require("../models/restaurant.model"));
 const generateToken_1 = __importDefault(require("../utils/generateToken"));
 const ApiError_1 = __importDefault(require("../utils/ApiError"));
 // @desc    Register new user
 // @route   POST /api/auth/signup
 const signup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
+    const { email, password, restaurantDetails } = req.body;
     try {
         const userExists = yield user_model_1.default.findOne({ where: { email } });
         if (userExists) {
             return next(new ApiError_1.default(400, 'User already exists'));
         }
         const user = yield user_model_1.default.create({ email, password });
+        const restaurant = yield restaurant_model_1.default.create(Object.assign(Object.assign({}, restaurantDetails), { userId: user.id }));
         return res.status(201).json({
             id: user.id,
             email: user.email,

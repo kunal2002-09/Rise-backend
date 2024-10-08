@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user.model';
+import Restaurant from '../models/restaurant.model';
 import generateToken from '../utils/generateToken';
 import ApiError from '../utils/ApiError';
 
 // @desc    Register new user
 // @route   POST /api/auth/signup
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body;
+  const { email, password ,restaurantDetails} = req.body;
 
   try {
     const userExists = await User.findOne({ where: { email } });
@@ -16,6 +17,8 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const user = await User.create({ email, password });
+    const restaurant = await Restaurant.create({...restaurantDetails,userId:user.id});
+
 
     return res.status(201).json({
       id: user.id,

@@ -26,13 +26,13 @@ export const sequelize = new Sequelize(
 );
 
 // Sync all models to the database
-// sequelize.sync({ force: false }) // `force: true` drops the tables before recreating them && // force: false ensures tables are not dropped
-//   .then(() => {
-//     console.log('All models were synchronized successfully.');
-//   })
-//   .catch(error => {
-//     console.error('Error synchronizing models:', error);
-//   });
+sequelize.sync({ force: true }) // `force: true` drops the tables before recreating them && // force: false ensures tables are not dropped
+  .then(() => {
+    console.log('All models were synchronized successfully.');
+  })
+  .catch(error => {
+    console.error('Error synchronizing models:', error);
+  });
 
 // Test the connection
 async function testConnection() {

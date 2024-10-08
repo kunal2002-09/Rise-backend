@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const database_1 = require("./db/database");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const restaurant_model_1 = __importDefault(require("./restaurant.model")); // Import the Restaurant model
 // Extend Sequelize's Model class and provide UserAttributes and CreationAttributes
 class User extends sequelize_1.Model {
     // Check if password matches the hashed password
@@ -48,6 +49,8 @@ User.init({
     tableName: 'users', // This defines the table name in the DB
     modelName: 'User', // This defines the name of the model in Sequelize
 });
+// Define associations here
+User.hasMany(restaurant_model_1.default, { foreignKey: 'userId', as: 'restaurants' }); // Association defined here
 // Hash password before saving the user
 User.beforeCreate((user) => __awaiter(void 0, void 0, void 0, function* () {
     const salt = yield bcryptjs_1.default.genSalt(10);
