@@ -1,17 +1,14 @@
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from './db/database';
-import User from './user.model'; // Import User model
+import mongoose, { Schema, Document } from 'mongoose';
 
 // Define the attributes interface
-interface RestaurantAttributes {
-  id?: number;
+interface RestaurantAttributes extends Document {
   name: string;
   address_components: object[];
   international_phone_number: string;
   url: string;
   opening_hours: object;
   rating: number;
-  user_ratings_total:number;
+  user_ratings_total: number;
   types: string[];
   takeout: boolean;
   serves_wine: boolean;
@@ -22,148 +19,104 @@ interface RestaurantAttributes {
   photos: string[];
   dineIn: boolean;
   delivery: boolean;
-  userId?: number;
+  userId?: mongoose.Types.ObjectId;
 }
 
-// Extend the Sequelize Model
-class Restaurant extends Model<RestaurantAttributes> implements RestaurantAttributes {
-  public id!: number;
-  public name!: string;
-  public address_components!: object[];
-  public international_phone_number!: string;
-  public opening_hours!: object;
-  public rating!: number;
-  public user_ratings_total!: number;
-  public url!: string;
-  public types!: string[];
-  public takeout!: boolean;
-  public serves_wine!: boolean;
-  public serves_beer!: boolean;
-  public reservable!: boolean;
-  public price_level!: number;
-  public place_id!: string;
-  public photos!: string[];
-  public dineIn!: boolean;
-  public delivery!: boolean;
-  public userId!: number;
-
-  // timestamps
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-}
-
-// Initialize the Restaurant model
-Restaurant.init(
+// Create the Restaurant Schema
+const RestaurantSchema: Schema<RestaurantAttributes> = new Schema(
   {
-    id: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      autoIncrement: true,
-      primaryKey: true,
-    },
     name: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     address_components: {
-      type: DataTypes.JSON,
-      allowNull: false,
+      type: [Object], // Store address components as an array of objects
+      required: true,
     },
     international_phone_number: {
-      type: DataTypes.STRING,
-      allowNull: false,
-     
+      type: String,
+      required: true,
     },
-
     opening_hours: {
-      type: DataTypes.JSON,
-      allowNull: false,
+      type: Object, // Store opening hours as a JSON-like object
+      required: true,
     },
-
     rating: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-        max: 5,
-      },
+      type: Number,
+      required: true,
+      min: 0,
+      max: 5,
     },
     user_ratings_total: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    
+      type: Number,
+      required: true,
     },
     url: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
       validate: {
-        isUrl: true,
+        validator: (v: string) => /^(https?:\/\/)/.test(v), // URL validation
+        message: props => `${props.value} is not a valid URL!`,
       },
     },
-
     types: {
-      type: DataTypes.JSON,
-      allowNull: false,
+      type: [String], // Store types as an array of strings
+      required: true,
     },
     takeout: {
-      type: DataTypes.BOOLEAN, // Whether the restaurant offers takeout
-      allowNull: false,
-      defaultValue: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
     serves_wine: {
-      type: DataTypes.BOOLEAN, // Whether the restaurant serves wine
-      allowNull: false,
-      defaultValue: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
     serves_beer: {
-      type: DataTypes.BOOLEAN, // Whether the restaurant serves beer
-      allowNull: false,
-      defaultValue: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
     reservable: {
-      type: DataTypes.BOOLEAN, // Whether the restaurant accepts reservations
-      allowNull: false,
-      defaultValue: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
     price_level: {
-      type: DataTypes.INTEGER, // Price level (e.g., 1, 2, 3, 4)
-      allowNull: false,
-      validate: {
-        min: 1,
-        max: 4, // Based on common price level scales (1 to 4)
-      },
+      type: Number,
+      required: true,
+      min: 1,
+      max: 4,
     },
     place_id: {
-      type: DataTypes.STRING, // Place ID, possibly from a service like Google Places
-      allowNull: false,
+      type: String,
+      required: true,
     },
     photos: {
-      type: DataTypes.JSON, // Store photos as a JSON array
-      allowNull: true,
+      type: [String], // Store photos as an array of strings (URLs)
     },
     dineIn: {
-      type: DataTypes.BOOLEAN, // Whether the restaurant offers dine-in service
-      allowNull: false,
-      defaultValue: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
     delivery: {
-      type: DataTypes.BOOLEAN, // Whether the restaurant offers delivery
-      allowNull: false,
-      defaultValue: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
     userId: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    }
-
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // Reference the User model
+    },
   },
   {
-    sequelize,
-    tableName: 'restaurants',
-    modelName: 'Restaurant',
+    timestamps: true, // Add createdAt and updatedAt timestamps
   }
 );
+
+// Create the Restaurant model
+const Restaurant = mongoose.model<RestaurantAttributes>('Restaurant', RestaurantSchema);
 
 export default Restaurant;

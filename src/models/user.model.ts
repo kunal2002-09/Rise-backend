@@ -1,65 +1,59 @@
-import { DataTypes, Model } from 'sequelize';
-import {sequelize} from './db/database';
+import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import Restaurant from './restaurant.model';  // Import the Restaurant model
 
-// Define a UserAttributes interface for defining the shape of the User model.
-interface UserAttributes {
-  id?: number;
+// Define a UserAttributes interface for the shape of the User model.
+interface UserAttributes extends Document {
   email: string;
   password: string;
+  validPassword(password: string): Promise<boolean>;
 }
 
-// Extend Sequelize's Model class and provide UserAttributes and CreationAttributes
-class User extends Model<UserAttributes> implements UserAttributes {
-  public id!: number;
-  public email!: string;
-  public password!: string;
-
-  // timestamps
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-
-  // Check if password matches the hashed password
-  public async validPassword(password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.password);
-  }
-}
-
-// Initialize the User model
-User.init(
+// Create the User schema
+const UserSchema: Schema<UserAttributes> = new Schema(
   {
-    id: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      autoIncrement: true,
-      primaryKey: true,
-    },
     email: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
       unique: true,
       validate: {
-        isEmail: true,
+        validator: (v: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v), // Email validation regex
+        message: props => `${props.value} is not a valid email!`,
       },
     },
     password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
   },
   {
-    sequelize,
-    tableName: 'users', // This defines the table name in the DB
-    modelName: 'User',  // This defines the name of the model in Sequelize
+    timestamps: true, // Add createdAt and updatedAt timestamps
   }
 );
-// Define associations here
-User.hasMany(Restaurant, { foreignKey: 'userId', as: 'restaurants' }); // Association defined here
+
+// Password comparison method
+UserSchema.methods.validPassword = async function (password: string): Promise<boolean> {
+  return await bcrypt.compare(password, this.password);
+};
 
 // Hash password before saving the user
-User.beforeCreate(async (user: User) => {
+UserSchema.pre<UserAttributes>('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
   const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
+
+// Define associations (optional in Mongoose as you retrieve by querying)
+UserSchema.virtual('restaurants', {
+  ref: 'Restaurant',
+  localField: '_id',
+  foreignField: 'userId',
+});
+
+// Create the User model
+const User = mongoose.model<UserAttributes>('User', UserSchema);
 
 export default User;

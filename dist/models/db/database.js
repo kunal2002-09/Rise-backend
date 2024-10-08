@@ -8,47 +8,46 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sequelize = void 0;
-// database.js
+const mongoose_1 = __importDefault(require("mongoose"));
 const constants_1 = require("../../lib/constants");
 const config_1 = require("../../config/config");
-const sequelize_1 = require("sequelize");
-// Create a new Sequelize instance with MySQL connection
-exports.sequelize = new sequelize_1.Sequelize(config_1.config[constants_1.ENVIRONMENT].MYSQL_SETTINGS.DATABASE, config_1.config[constants_1.ENVIRONMENT].MYSQL_SETTINGS.USER, config_1.config[constants_1.ENVIRONMENT].MYSQL_SETTINGS.PASSWORD, {
-    host: config_1.config[constants_1.ENVIRONMENT].MYSQL_SETTINGS.HOST,
-    port: config_1.config[constants_1.ENVIRONMENT].MYSQL_SETTINGS.PORT,
-    dialect: config_1.config[constants_1.ENVIRONMENT].MYSQL_SETTINGS.DIALECT,
-    dialectOptions: {
-        supportBigNumbers: true,
-        // useUTC: false  // Uncomment if needed
-    },
-    // timezone: '+05:30', // Uncomment if needed
-    logging: false,
-    pool: {
-        max: 10,
-        idle: 10000
-    }
-});
-// Sync all models to the database
-exports.sequelize.sync({ force: true }) // `force: true` drops the tables before recreating them && // force: false ensures tables are not dropped
+// Build the MongoDB connection string
+const mongoURI = config_1.config[constants_1.ENVIRONMENT].MONGODB_SETTINGS.URI;
+// Connection options
+const options = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    poolSize: 10, // Maintain up to 10 socket connections
+    connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    // Uncomment below if you want to enforce using the correct timezone
+    // useCreateIndex: true,
+    // useFindAndModify: false,
+};
+// Connect to MongoDB
+mongoose_1.default.connect(mongoURI, options)
     .then(() => {
-    console.log('All models were synchronized successfully.');
+    console.log('Connected to MongoDB successfully');
 })
-    .catch(error => {
-    console.error('Error synchronizing models:', error);
+    .catch((error) => {
+    console.error('Error connecting to MongoDB:', error);
 });
-// Test the connection
+// Function to test the connection (optional since Mongoose handles connection testing)
 function testConnection() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield exports.sequelize.authenticate();
-            console.log('Connection has been established successfully.');
+            yield mongoose_1.default.connection;
+            console.log('MongoDB connection is established successfully.');
         }
         catch (error) {
-            console.error('Unable to connect to the database:', error);
+            console.error('Error testing MongoDB connection:', error);
         }
     });
 }
 testConnection();
+exports.default = mongoose_1.default;
 //# sourceMappingURL=database.js.map

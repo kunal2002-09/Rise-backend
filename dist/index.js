@@ -13,13 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
-const database_1 = require("./models/db/database");
-// Import your Sequelize connection
 const PORT = process.env.PORT || 6551;
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield database_1.sequelize.authenticate(); // Connect to database
-        console.log('Database connected');
         app_1.default.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });

@@ -1,117 +1,120 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const sequelize_1 = require("sequelize");
-const database_1 = require("./db/database");
-const user_model_1 = __importDefault(require("./user.model")); // Import User model
-// Extend the Sequelize Model
-class Restaurant extends sequelize_1.Model {
-}
-// Initialize the Restaurant model
-Restaurant.init({
-    id: {
-        type: sequelize_1.DataTypes.INTEGER.UNSIGNED,
-        autoIncrement: true,
-        primaryKey: true,
-    },
+const mongoose_1 = __importStar(require("mongoose"));
+// Create the Restaurant Schema
+const RestaurantSchema = new mongoose_1.Schema({
     name: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
     },
     address_components: {
-        type: sequelize_1.DataTypes.JSON,
-        allowNull: false,
+        type: [Object], // Store address components as an array of objects
+        required: true,
     },
     international_phone_number: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
     },
     opening_hours: {
-        type: sequelize_1.DataTypes.JSON,
-        allowNull: false,
+        type: Object, // Store opening hours as a JSON-like object
+        required: true,
     },
     rating: {
-        type: sequelize_1.DataTypes.FLOAT,
-        allowNull: false,
-        validate: {
-            min: 0,
-            max: 5,
-        },
+        type: Number,
+        required: true,
+        min: 0,
+        max: 5,
     },
     user_ratings_total: {
-        type: sequelize_1.DataTypes.FLOAT,
-        allowNull: false,
+        type: Number,
+        required: true,
     },
     url: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
         validate: {
-            isUrl: true,
+            validator: (v) => /^(https?:\/\/)/.test(v), // URL validation
+            message: props => `${props.value} is not a valid URL!`,
         },
     },
     types: {
-        type: sequelize_1.DataTypes.JSON,
-        allowNull: false,
+        type: [String], // Store types as an array of strings
+        required: true,
     },
     takeout: {
-        type: sequelize_1.DataTypes.BOOLEAN, // Whether the restaurant offers takeout
-        allowNull: false,
-        defaultValue: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     serves_wine: {
-        type: sequelize_1.DataTypes.BOOLEAN, // Whether the restaurant serves wine
-        allowNull: false,
-        defaultValue: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     serves_beer: {
-        type: sequelize_1.DataTypes.BOOLEAN, // Whether the restaurant serves beer
-        allowNull: false,
-        defaultValue: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     reservable: {
-        type: sequelize_1.DataTypes.BOOLEAN, // Whether the restaurant accepts reservations
-        allowNull: false,
-        defaultValue: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     price_level: {
-        type: sequelize_1.DataTypes.INTEGER, // Price level (e.g., 1, 2, 3, 4)
-        allowNull: false,
-        validate: {
-            min: 1,
-            max: 4, // Based on common price level scales (1 to 4)
-        },
+        type: Number,
+        required: true,
+        min: 1,
+        max: 4,
     },
     place_id: {
-        type: sequelize_1.DataTypes.STRING, // Place ID, possibly from a service like Google Places
-        allowNull: false,
+        type: String,
+        required: true,
     },
     photos: {
-        type: sequelize_1.DataTypes.JSON, // Store photos as a JSON array
-        allowNull: true,
+        type: [String], // Store photos as an array of strings (URLs)
     },
     dineIn: {
-        type: sequelize_1.DataTypes.BOOLEAN, // Whether the restaurant offers dine-in service
-        allowNull: false,
-        defaultValue: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     delivery: {
-        type: sequelize_1.DataTypes.BOOLEAN, // Whether the restaurant offers delivery
-        allowNull: false,
-        defaultValue: false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     userId: {
-        type: sequelize_1.DataTypes.INTEGER.UNSIGNED,
-        references: {
-            model: user_model_1.default,
-            key: 'id',
-        },
-    }
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'User', // Reference the User model
+    },
 }, {
-    sequelize: database_1.sequelize,
-    tableName: 'restaurants',
-    modelName: 'Restaurant',
+    timestamps: true, // Add createdAt and updatedAt timestamps
 });
+// Create the Restaurant model
+const Restaurant = mongoose_1.default.model('Restaurant', RestaurantSchema);
 exports.default = Restaurant;
 //# sourceMappingURL=restaurant.model.js.map

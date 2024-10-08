@@ -1,48 +1,41 @@
-// database.js
-import { ENVIRONMENT  } from '../../lib/constants';
+import mongoose from 'mongoose';
+import { ENVIRONMENT } from '../../lib/constants';
 import { config } from '../../config/config';
-import { Sequelize } from 'sequelize';
 
-// Create a new Sequelize instance with MySQL connection
-export const sequelize = new Sequelize(
-  config[ENVIRONMENT].MYSQL_SETTINGS.DATABASE,
-  config[ENVIRONMENT].MYSQL_SETTINGS.USER,
-  config[ENVIRONMENT].MYSQL_SETTINGS.PASSWORD,
-  {
-    host: config[ENVIRONMENT].MYSQL_SETTINGS.HOST,
-    port: config[ENVIRONMENT].MYSQL_SETTINGS.PORT,
-    dialect: config[ENVIRONMENT].MYSQL_SETTINGS.DIALECT,
-    dialectOptions: {
-      supportBigNumbers: true,
-      // useUTC: false  // Uncomment if needed
-    },
-    // timezone: '+05:30', // Uncomment if needed
-    logging: false,
-    pool: {
-      max: 10,
-      idle: 10000
-    }
-  }
-);
+// Build the MongoDB connection string
+const mongoURI = config[ENVIRONMENT].MONGODB_SETTINGS.URI;
 
-// Sync all models to the database
-sequelize.sync({ force: true }) // `force: true` drops the tables before recreating them && // force: false ensures tables are not dropped
+// Connection options
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  poolSize: 10, // Maintain up to 10 socket connections
+  connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+  socketTimeoutMS: 45000,  // Close sockets after 45 seconds of inactivity
+  // Uncomment below if you want to enforce using the correct timezone
+  // useCreateIndex: true,
+  // useFindAndModify: false,
+};
+
+// Connect to MongoDB
+mongoose.connect(mongoURI, options)
   .then(() => {
-    console.log('All models were synchronized successfully.');
+    console.log('Connected to MongoDB successfully');
   })
-  .catch(error => {
-    console.error('Error synchronizing models:', error);
+  .catch((error) => {
+    console.error('Error connecting to MongoDB:', error);
   });
 
-// Test the connection
+// Function to test the connection (optional since Mongoose handles connection testing)
 async function testConnection() {
   try {
-    await sequelize.authenticate();
-    console.log('Connection has been established successfully.');
+    await mongoose.connection;
+    console.log('MongoDB connection is established successfully.');
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('Error testing MongoDB connection:', error);
   }
 }
 
 testConnection();
 
+export default mongoose;
